@@ -78,7 +78,7 @@ class MyEgeria(App):
     async def on_login_screen_login_success(self, _message: object) -> None:
         await self.push_screen("main_menu")
 
-    # Convenience helpers for pushing details screens (that need args)
+    # Convenience helpers for pushing details screens
     async def show_term_details(self, term_guid: str):
         await self.push_screen(TermDetailsScreen(term_guid))
 

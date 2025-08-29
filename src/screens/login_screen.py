@@ -12,12 +12,18 @@ import os
 import asyncio
 from textual.containers import Container, Vertical
 from textual.widgets import Static, Input, Button
-from screens.base_screen import BaseScreen
-from con_services import egeria_connection as econn
+from textual.message import Message
+from .base_screen import BaseScreen
+from egeria_connection import EgeriaConnectionService as econn
 
 
 class LoginScreen(BaseScreen):
     """User log in screen, automatically displayed following the package splash screen."""
+
+    class LoginSuccess(Message):
+        """Signal that the login was successful."""
+        def __init__(self):
+            super().__init__()
 
     CSS_PATH = ["../styles/common.css", "../styles/login_screen.css"]
 
@@ -145,7 +151,8 @@ class LoginScreen(BaseScreen):
 
         if ok:
             status.update("Connected.")
-            await self.app.push_screen("main_menu")
+            self.log(f"Login completed - connected: {view_server}, {username}")
+            self.post_message(LoginScreen.LoginSuccess())
         else:
             if not status.renderable:
                 status.update("Login failed.")
