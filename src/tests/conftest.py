@@ -14,7 +14,9 @@ from pathlib import Path
 
 # Ensure `src` is on sys.path so imports like `services.*` and `my_egeria.*` work in tests
 # tests/ is at: <project-root>/src/my_egeria/tests
-SRC_DIR = Path(__file__).resolve().parents[2]  # -> <project-root>/src
+# src/tests/conftest.py lives two levels under <project-root>/src
+# parents[1] -> <project-root>/src
+SRC_DIR = Path(__file__).resolve().parents[1]
 if SRC_DIR.is_dir():
     sys.path.insert(0, str(SRC_DIR))
 

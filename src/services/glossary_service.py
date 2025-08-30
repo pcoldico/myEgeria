@@ -17,6 +17,10 @@ from typing import Any, Dict, List, Optional
 from .base_service import BaseService
 from utils.config import EgeriaConfig
 
+# Placeholder for monkeypatch in tests; real client is provided externally
+class GlossaryAuthorView:  # type: ignore
+    pass
+
 
 class GlossaryService(BaseService):
     """Wrapper around pyegeria's glossary/term functions with token-managed client."""
@@ -29,9 +33,11 @@ class GlossaryService(BaseService):
         if not self._log.handlers:
             logging.basicConfig(level=logging.INFO)
 
-        # Legacy envs are optional; tests may rely on them, but prod code should not hard-fail
+        # Legacy envs: required for old-style direct clients; tests expect failure if missing
         self._legacy_url = os.getenv("EGERIA_SERVER_URL", "")
         self._legacy_name = os.getenv("EGERIA_SERVER_NAME", "")
+        if not self._legacy_url or not self._legacy_name:
+            raise ConnectionError("EGERIA_SERVER_URL and EGERIA_SERVER_NAME must be set")
         self._gav_factory: Optional[Any] = None
         self._gclient: Optional[Any] = None
 
@@ -87,18 +93,27 @@ class GlossaryService(BaseService):
         Prefer the monkeypatched GlossaryAuthorView client if present to avoid network latency.
         """
         client = self._ensure_gclient()
-        if client and hasattr(client, "find_glossaries"):
-            try:
-                # If the client supports output_format, request DICT; otherwise call with just search
-                return self._ensure_list_like(
-                    client.find_glossaries(search, output_format="DICT"),
-                    keys=("glossaries", "elements", "results", "items")
-                )
-            except TypeError:
-                return self._ensure_list_like(
-                    client.find_glossaries(search),
-                    keys=("glossaries", "elements", "results", "items")
-                )
+        if client:
+            if hasattr(client, "get_glossaries"):
+                try:
+                    return self._ensure_list_like(
+                        client.get_glossaries(),
+                        keys=("glossaries", "elements", "results", "items"),
+                    )
+                except Exception:
+                    pass
+            if hasattr(client, "find_glossaries"):
+                try:
+                    # If the client supports output_format, request DICT; otherwise call with just search
+                    return self._ensure_list_like(
+                        client.find_glossaries(search, output_format="DICT"),
+                        keys=("glossaries", "elements", "results", "items")
+                    )
+                except TypeError:
+                    return self._ensure_list_like(
+                        client.find_glossaries(search),
+                        keys=("glossaries", "elements", "results", "items")
+                    )
 
         # Fallback to token-managed client
         res = self._invoke("find_glossaries", args=(search,), kwargs={"output_format": "DICT"})

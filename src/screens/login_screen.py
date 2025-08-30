@@ -9,16 +9,24 @@ This module provides services for the Screen related functions of my_egeria modu
 """
 
 import os
-import asyncio
+
 from textual.containers import Container, Vertical
 from textual.widgets import Static, Input, Button
 from textual.message import Message
 from .base_screen import BaseScreen
-from egeria_connection import EgeriaConnectionService as econn
-
 
 class LoginScreen(BaseScreen):
     """User log in screen, automatically displayed following the package splash screen."""
+
+    class EgeriaLoginRequester(Message):
+        def __init__(self, payload):
+            super().__init__()
+            self.payload = payload
+            username = payload.get("username")
+            password = payload.get("password")
+            platform_url = payload.get("platform_url")
+            view_server = payload.get("view_server")
+
 
     class LoginSuccess(Message):
         """Signal that the login was successful."""
@@ -128,27 +136,12 @@ class LoginScreen(BaseScreen):
         status.update("Connecting...")
 
         ok = False
-        try:
-            # Run blocking work off the UI thread, with a timeout for safety
-            ok = await asyncio.wait_for(
-                asyncio.to_thread(
-                    econn.connect_to_egeria,
-                    username,
-                    password,
-                    platform_url,
-                    view_server,
-                ),
-                timeout=8.0,
-            )
-        except asyncio.TimeoutError:
-            ok = False
-            status.update("Connection timed out.")
-        except Exception as e:
-            ok = False
-            status.update(f"Error: {e}")
-        finally:
-            btn.disabled = False
-
+        payload = ({"username": username,
+                    "password": password,
+                    "platform_url": platform_url,
+                    "view_server": view_server})
+        ok = self.post_message(LoginScreen.EgeriaLoginRequester(payload))
+        btn.disabled = False
         if ok:
             status.update("Connected.")
             self.log(f"Login completed - connected: {view_server}, {username}")

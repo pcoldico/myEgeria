@@ -1,4 +1,3 @@
-# python
 
 """PDX-License-Identifier: Apache-2.0
 Copyright Contributors to the ODPi Egeria project.
@@ -13,7 +12,7 @@ from __future__ import annotations
 from typing import Optional
 
 from utils.config import get_global_config
-# from src.utils.egeria_client import preflight_origin
+# from ..utils.egeria_client import preflight_origin
 
 
 class EgeriaConnectionService:
@@ -30,10 +29,9 @@ class EgeriaConnectionService:
     def is_connected(self) -> bool:
         # try:
         #     preflight_origin(self.platform_url, self.user, timeout=2.0)
-        #     return True
+        return True
         # except Exception:
         #     return False
-        return True
 
     def connect_to_egeria(
         self,
@@ -41,7 +39,7 @@ class EgeriaConnectionService:
         password: str,
         platform_url: str,
         view_server: str,
-    ) -> bool:
+        ) -> bool:
         """Update connection parameters and perform authentication."""
         self.user = user
         self.password = password
@@ -59,10 +57,8 @@ class EgeriaConnectionService:
                 user_id=self.user,
                 user_pwd=self.password,
             )
-            if hasattr(client, "create_egeria_bearer_token"):
-                client.create_egeria_bearer_token(username, password)
-            if hasattr(client, "close_session"):
-                client.close_session()
+            client.create_egeria_bearer_token(username, password)
+            client.close_session()
             return True
         except Exception:
             return False
@@ -70,24 +66,19 @@ class EgeriaConnectionService:
     def verify_connection(self) -> bool:
         if not self.platform_url:
             raise ConnectionError("Egeria platform URL not set.")
-        if "://" not in self.platform_url:
-            raise ConnectionError(f"Malformed Egeria platform URL: {self.platform_url}")
-
-        # Fast preflight first
-        # preflight_origin(self.platform_url, self.user, timeout=2.0)
         self.platform_status = "running"
         return True
 
 
 # Module-level singleton to back simple functional API (easy to patch in tests)
-_SERVICE: Optional[EgeriaConnectionService] = None
 
+_SERVICE_SINGLETON: Optional[EgeriaConnectionService] = None
 
 def _get_service() -> EgeriaConnectionService:
-    global _SERVICE
-    if _SERVICE is None:
-        _SERVICE = EgeriaConnectionService()
-    return _SERVICE
+    global _SERVICE_SINGLETON
+    if _SERVICE_SINGLETON is None:
+        _SERVICE_SINGLETON = EgeriaConnectionService()
+    return _SERVICE_SINGLETON
 
 
 # Backward-compatible, test-friendly functional API

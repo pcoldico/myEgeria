@@ -1,5 +1,6 @@
 """Startup connectivity check to Egeria using pyegeria."""
 
+
 """
 
    PDX-License-Identifier: Apache-2.0
@@ -35,7 +36,8 @@ if not EGERIA_USER_PASSWORD:
     EGERIA_USER_PASSWORD = os.environ.get("EGERIA_USER_PASSWORD", "secret")
 
 def validate_envs() -> Tuple[bool, str]:
-    missing = [name for name in REQUIRED_ENVS if not globals().get(name)]
+    # Check actual environment variables, not defaults, so tests can simulate missing envs
+    missing = [name for name in REQUIRED_ENVS if not os.getenv(name)]
     if missing:
         return False, f"Missing environment variables: {', '.join(missing)}"
     return True, "Envs present"
@@ -43,22 +45,21 @@ def validate_envs() -> Tuple[bool, str]:
 
 def check_connection() -> Tuple[bool, str]:
     """Attempt to connect using pyegeria. Returns (ok, message)."""
-    # try:
-    #     # Importing pyegeria is required
-    #     from pyegeria import EgeriaCat
-    # except Exception as e:
-    #     return False, f"pyegeria import failed: {e}. Please pip install pyegeria."
-    #
-    # ok_envs, msg = validate_envs()
-    # if not ok_envs:
-    #     return False, msg
-    #
-    # try:
-    #     # Create client and run a lightweight call to verify connectivity.
-    #     # We use find_glossaries if available; any light call will suffice.
-    #     client = EgeriaCat(EGERIA_SERVER, EGERIA_BASE_URL, EGERIA_USER, EGERIA_USER_PASSWORD)
-    #     # Attempt to call a simple method; adapt if your pyegeria version exposes a ping/status method.
-    #     getattr(client, "find_glossaries", lambda: None)()
-    return True, "Connected to Egeria"
-    # except Exception as e:
-    #     return False, f"Failed to connect to Egeria: {e}"
+    try:
+        # Importing pyegeria is required
+        from pyegeria import EgeriaTech
+    except Exception as e:
+        return False, f"pyegeria import failed: {e}. Please pip install pyegeria."
+
+    ok_envs, msg = validate_envs()
+    if not ok_envs:
+        return False, msg
+
+    try:
+        # Create client and run a lightweight call to verify connectivity.
+        client = EgeriaTech(EGERIA_SERVER, EGERIA_BASE_URL, EGERIA_USER, EGERIA_USER_PASSWORD)
+        # Attempt to call a simple method; adapt if your pyegeria version exposes a ping/status method.
+        getattr(client, "find_glossaries", lambda: None)()
+        return True, "Connected to Egeria"
+    except Exception as e:
+        return False, f"Failed to connect to Egeria: {e}"

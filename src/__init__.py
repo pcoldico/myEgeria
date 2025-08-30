@@ -6,6 +6,3 @@
    Copyright Contributors to the ODPi Egeria project.
 
 """
-from con_services import
-from screens import *
-from styles import *

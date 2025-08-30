@@ -10,7 +10,7 @@
 
 #export PYTHONPATH=/Users/dwolfson/localGit/egeria-v5-3/egeria_tui/src:$PYTHONPATH
 
-export PYTHONPATH=/User/petercoldicott/PycharmProjects/egeria/my_egeria:$PYTHONPATH
+#export PYTHONPATH=$PYTHONPATH:/User/petercoldicott/PycharmProjects/egeria/my_egeria
 export EGERIA_DEBUG_METHODS=true
 export EGERIA_PLATFORM_URL=https://localhost:9443
 export EGERIA_VIEW_SERVER=qs-view-server

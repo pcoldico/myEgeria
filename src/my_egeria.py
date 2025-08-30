@@ -20,11 +20,11 @@ from textual.widgets import Footer
 from screens.login_screen import LoginScreen
 from screens.main_menu import MainMenuScreen
 from screens.glossary.glossary_browser import GlossaryBrowserScreen
-from screens.collections.collection_browser import CollectionBrowserScreen
-from screens.collections.collection_members_screen import CollectionMemberScreen
-from screens.collections.collection_details import CollectionDetailsScreen
-from screens.collections.add_collection import AddCollectionScreen
-from screens.collections.delete_collection import DeleteCollectionScreen
+from screens.a_collections.collection_browser import CollectionBrowserScreen
+from screens.a_collections.collection_members_screen import CollectionMemberScreen
+from screens.a_collections.collection_details import CollectionDetailsScreen
+from screens.a_collections.add_collection import AddCollectionScreen
+from screens.a_collections.delete_collection import DeleteCollectionScreen
 from screens.glossary.glossary_list_screen import GlossaryListScreen
 from screens.glossary.term_details import TermDetailsScreen
 from screens.glossary.term_list_screen import TermListScreen
@@ -36,6 +36,8 @@ from screens.ProductManager.product_manager_browser import ProductManagerBrowser
 from utils.egeria_client import close_all_managers
 from screens.splash_screen import SplashScreen  # your existing splash screen
 from services.term_service import get_terms_for_glossary
+# from pyegeria import EgeriaTech
+
 
 class MyEgeria(App):
     """Main app class of my_egeria."""
@@ -73,7 +75,32 @@ class MyEgeria(App):
         # Start at splash
         await self.push_screen("splash")
 
-    # Optional: handle a "login successful" message from LoginScreen if you use one
+    # handle a message requesting login to egeria to verify user credentials
+    async def on_login_screen_egeria_login_requested(self,payload) -> bool:
+        from pyegeria import EgeriaTech
+        username = payload["username"]
+        password = payload["password"]
+        platform_url = payload["platform_url"]
+        view_server = payload["view_server"]
+        try:
+            client = EgeriaTech(
+                user_id=username,
+                user_pwd=password,
+                platform_url=platform_url,
+                view_server=view_server
+            )
+            tokendata = client.create_egeria_bearer_token(
+                user_id=username,
+                user_pwd=password)
+            client.close_session()
+            ok = True
+        except Exception as e:
+            self.log(f"Log in to egeria error: {e}")
+            ok = False
+        finally:
+            return ok
+
+    # Handle a "login successful" message from LoginScreen
     # Provide a generic hook to go to main menu after login
     async def on_login_screen_login_success(self, _message: object) -> None:
         await self.push_screen("main_menu")
@@ -105,4 +132,6 @@ if __name__ == "__main__":
     # Optionally preload env defaults for demo
     os.environ.setdefault("EGERIA_PLATFORM_URL", "https://localhost:9443")
     os.environ.setdefault("EGERIA_VIEW_SERVER", "qs-view-server")
+    os.environ.setdefault("EGERIA_USER", "erinoverview")
+    os.environ.setdefault("EGERIA_USER_PASSWORD", "secret")
     MyEgeria().run()

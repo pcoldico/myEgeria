@@ -18,7 +18,6 @@ from .add_collection import AddCollectionScreen
 from .delete_collection import DeleteCollectionScreen
 import asyncio
 from textual import on
-# ... existing imports ...
 
 class CollectionBrowserScreen(BaseScreen):
     CSS_PATH = ["../../styles/common.css", "../../styles/collection_browser.css"]

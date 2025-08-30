@@ -171,8 +171,9 @@ class GovernanceOfficerBrowserScreen(BaseScreen):
         """Open the Create New Collection screen (non-blocking)."""
         if self.last_selected_guid:
             # Find the Root(s) for that selected type and display a table of them to select from,
-            # could be a tree maybe betterand display 2 or 3 levels deep by default
+            # could be a tree maybe better and display 2 or 3 levels deep by default
                 root = await self.service.get_collections_by_name(self.last_selected_guid)
+                # root = await self.service.find_collections(seach_term = "marketplace")
                 root_guid = root.get("GUID", None)
                 root_name = root.get("title", None)
                 root_qname = root.get("qualifiedName", None)
@@ -207,7 +208,7 @@ class GovernanceOfficerBrowserScreen(BaseScreen):
                                     entries.add(f"No members found for {folder_name}")
                                     continue
                             else:
-                                market_tree.root.add_leaf(folder_name, data = folder_guid, expand = True)
+                                market_tree.root.add(folder_name, data = folder_guid, expand = True)
                     else:
                         # marketplace is empty
                         self.log(f"Marketplace guid {marketplace_guid} is empty")
@@ -226,8 +227,7 @@ class GovernanceOfficerBrowserScreen(BaseScreen):
 
     def not_marketplace_guid(self, root_guid: str):
         self.log(f"Found non-marketplace guid of {root_guid}")
-        pass
-
+        return
 
     @on(Button.Pressed, "#gd-new-button")
     async def handle_new_button(self, event: Button.Pressed) -> None:
@@ -312,6 +312,8 @@ class GovernanceOfficerBrowserScreen(BaseScreen):
         self.table.clear()
         try:
             collections = await asyncio.to_thread(self.service.find_governance_definitions, search or "*")
+            self.log(f"Found {len(collections)} collections")
+            self.log(f"Collections: {collections}")
             if collections:
                 for c in collections:
                     guid = (c.get("GUID", ""))
