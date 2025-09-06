@@ -14,6 +14,11 @@ import time
 from typing import Any, Callable, Optional, Tuple
 from urllib.parse import quote
 
+os.environ.setdefault("EGERIA_USER", "erinoverview")
+os.environ.setdefault("EGERIA_USER_PASSWORD", "secret")
+os.environ.setdefault("EGERIA_VIEW_SERVER", "qs-view-server")
+os.environ.setdefault("EGERIA_PLATFORM_URL", "https://localhost:9443")
+
 # import requests
 
 from typing import TYPE_CHECKING, Protocol
@@ -113,20 +118,26 @@ class EgeriaTechClientManager:
         #     pass
 
         # Import pyegeria lazily to avoid import-time config validation during test collection
+        # todo fix the environment var _bool_env
+        os.environ.setdefault("EGERIA_USER", "erinoverview")
+        os.environ.setdefault("EGERIA_USER_PASSWORD", "secret")
+        os.environ.setdefault("EGERIA_VIEW_SERVER", "qs-view-server")
+        os.environ.setdefault("EGERIA_PLATFORM_URL", "https://localhost:9443")
         try:
+            from pyegeria.config import settings
             from pyegeria import EgeriaTech
         except Exception as e:
             # Allow running without pyegeria in test/dev if explicitly enabled
-            if _bool_env("EGERIA_ALLOW_MISSING", True):
-                class _StubClient:
-                    def __init__(self, *args, **kwargs):
-                        pass
-                    def create_egeria_bearer_token(self, user_id: str, user_pwd: str):
-                        return {"token": "stub"}
-                    def close_session(self) -> None:
-                        pass
-                EgeriaTech = _StubClient  # type: ignore
-            else:
+            # if _bool_env("EGERIA_ALLOW_MISSING", True):
+            #     class _StubClient:
+            #         def __init__(self, *args, **kwargs):
+            #             pass
+            #         def create_egeria_bearer_token(self, user_id: str, user_pwd: str):
+            #             return {"token": "stub"}
+            #         def close_session(self) -> None:
+            #             pass
+            #     EgeriaTech = _StubClient  # type: ignore
+            # else:
                 raise ImportError(
                     "pyegeria is required to build an Egeria client. "
                     "Install 'pyegeria' or set EGERIA_ALLOW_MISSING=true for tests/dev to use a stub client."
@@ -138,10 +149,14 @@ class EgeriaTechClientManager:
 
             # Build with explicit keyword arguments to avoid positional-order bugs
             self._client = EgeriaTech(
-                view_server=self.config.view_server,
-                platform_url=self.config.platform_url,
-                user_id=self.config.user,
-                user_pwd=self.config.password,
+                # view_server=self.config.view_server,
+                # platform_url=self.config.platform_url,
+                # user_id=self.config.user,
+                # user_pwd=self.config.password,
+                view_server="qs-view-server",
+                platform_url="https://localhost:9443",
+                user_id="erinoverview",
+                user_pwd="secret",
             )
             self._authenticate()
         elif self._token_expired():

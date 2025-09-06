@@ -1,4 +1,9 @@
-# python
+import os
+
+os.environ.setdefault("EGERIA_USER", "erinoverview")
+os.environ.setdefault("EGERIA_USER_PASSWORD", "secret")
+os.environ.setdefault("EGERIA_VIEW_SERVER", "qs-view-server")
+os.environ.setdefault("EGERIA_PLATFORM_URL", "https://localhost:9443")
 
 """PDX-License-Identifier: Apache-2.0
 Copyright Contributors to the ODPi Egeria project.
@@ -7,7 +12,7 @@ This module provides services for the functions of my_egeria module.
 
 
 """
-
+from textual import log
 from typing import Any, List, Dict, Optional, Tuple
 from utils.egeria_client import EgeriaTechClientManager
 from utils.config import EgeriaConfig, get_global_config
@@ -34,6 +39,7 @@ class BaseService:
             fn = getattr(client, method_name, None)
             if not fn:
                 raise AttributeError(f"Client has no method '{method_name}'")
+            log(f"Invoking {method_name} with args={a} kwargs={k}")
             return fn(*a, **k)
 
         return self.manager.invoke_with_auto_refresh(_call, args=args, kwargs=kwargs)

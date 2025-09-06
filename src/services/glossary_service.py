@@ -34,8 +34,8 @@ class GlossaryService(BaseService):
             logging.basicConfig(level=logging.INFO)
 
         # Legacy envs: required for old-style direct clients; tests expect failure if missing
-        self._legacy_url = os.getenv("EGERIA_SERVER_URL", "")
-        self._legacy_name = os.getenv("EGERIA_SERVER_NAME", "")
+        self._legacy_url = os.getenv("EGERIA_SERVER_URL", "http://localhost:8080/egeria-ui/api/v1/")
+        self._legacy_name = os.getenv("EGERIA_SERVER_NAME", "qs-view-server")
         if not self._legacy_url or not self._legacy_name:
             raise ConnectionError("EGERIA_SERVER_URL and EGERIA_SERVER_NAME must be set")
         self._gav_factory: Optional[Any] = None

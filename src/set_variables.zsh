@@ -17,7 +17,10 @@ export EGERIA_VIEW_SERVER=qs-view-server
 export EGERIA_USER=erinoverview
 export EGERIA_USER_PASSWORD=secret
 export EGERIA_SSL_VERIFY=false
-export EGERIA_DEBUG_METHODS=true
-export EGERIA_DEBUG_RESULTS=true
+export EGERIA_DEBUG_METHODS=false
+export EGERIA_DEBUG_RESULTS=false
+export PYEGERIA_USER_FORMAT_SETS_DIR=./
+
+
 textual run --dev my_egeria.py
 

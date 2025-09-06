@@ -7,6 +7,7 @@ This module provides services for the Collections related functions of my_egeria
 
 
 """
+import os
 import asyncio
 from typing import Any, Dict, List, Optional
 from .base_service import BaseService
